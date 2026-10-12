@@ -51,6 +51,24 @@ python -m pytest tests/ -v
 
 13 tests cover PGN parsing correctness, opening classification, move-tree aggregation invariants (win/draw/loss rates summing to 1, node counts matching manual counts), material balance calculation, and win-probability prediction (both the heuristic and trained-model code paths).
 
+## Evaluation on Real Games
+
+`evaluate.py` measures the win-probability model on **793 real Lichess blitz games** (`sample_data/lichess_blitz.pgn`, two public arenas, CC0). The split is by game rather than by position so no game leaks across train and test, and results are averaged over 5 random splits.
+
+```bash
+python evaluate.py
+```
+
+| Predictor | Held-out accuracy (mean of 5 splits) |
+|---|---|
+| Trained logistic regression | 61.6% (range 56.9–63.6%) |
+| Material-count heuristic (no training) | 61.9% (range 57.0–65.6%) |
+| Majority-class baseline | 51.0% |
+
+By game phase, model accuracy is ~50% in the opening (ply 1–20), ~65% in the middlegame and ~77% past ply 60.
+
+**Honest read:** both predictors beat the baseline by about 10 points, but the trained model does not beat the hand-written material heuristic. With only three features (material, ply, side to move), the model mostly re-learns "more material wins". Adding features such as mobility, king safety or an engine evaluation is the obvious next step.
+
 ## Usage as a library
 
 ```python
